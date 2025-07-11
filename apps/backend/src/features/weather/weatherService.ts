@@ -1,9 +1,5 @@
-import axios from "axios";
+import { weatherApiClient } from "../../utils/httpClient";
 import type { WeatherData } from "@weather-app/shared";
-
-const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
-const OPENWEATHER_BASE_URL =
-process.env.OPENWEATHER_BASE_URL;
 
 interface OpenWeatherResponse {
   main: {
@@ -26,90 +22,108 @@ interface OpenWeatherResponse {
 }
 
 export class WeatherServiceError extends Error {
-  constructor(message: string, public statusCode?: number) {
+  constructor(
+    message: string,
+    public statusCode?: number,
+    public retryable: boolean = false
+  ) {
     super(message);
     this.name = "WeatherServiceError";
   }
 }
 
 export const weatherService = {
-  async getWeatherByCity(city: string, lat?: number, lon?: number): Promise<WeatherData> {
-    console.log("🚀 ~ getWeatherByCity ~ city:", city)
-    if (!OPENWEATHER_API_KEY) {
-      throw new WeatherServiceError("OpenWeather API key not configured");
+  async getWeatherByCity(city: string): Promise<WeatherData> {
+    if (!process.env.OPENWEATHER_API_KEY) {
+      throw new WeatherServiceError(
+        "OpenWeather API key not configured",
+        500,
+        false
+      );
     }
 
     try {
-      const response = await axios.get<OpenWeatherResponse>(
-        `${OPENWEATHER_BASE_URL}/find`,
+      const response = await weatherApiClient.get<OpenWeatherResponse>(
+        "/weather",
         {
           params: {
             q: city,
-            lat,
-            lon,
-            appid: OPENWEATHER_API_KEY,
-            units: "metric"
+            units: "metric",
           },
-          timeout: 10000, // 10 second timeout
         }
       );
 
       return this.transformWeatherData({city, data: response.data});
-    } catch (error) {
-        console.log("🚀 ~ getWeatherByCity ~ error:", error)
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 404) {
-          throw new WeatherServiceError(`City "${city}" not found`, 404);
-        }
-        if (error.response?.status === 401) {
-          throw new WeatherServiceError("Invalid API key", 401);
-        }
-        if (error.code === "ECONNABORTED") {
-          throw new WeatherServiceError(
-            "Request timeout - weather service unavailable",
-            408
-          );
-        }
-      }
-      throw new WeatherServiceError("Failed to fetch weather data");
+    } catch (error: any) {
+      throw this.handleApiError(error);
     }
   },
 
   async getWeatherByCoords(lat: number, lon: number): Promise<WeatherData> {
-    if (!OPENWEATHER_API_KEY) {
-      throw new WeatherServiceError("OpenWeather API key not configured");
+    if (!process.env.OPENWEATHER_API_KEY) {
+      throw new WeatherServiceError(
+        "OpenWeather API key not configured",
+        500,
+        false
+      );
     }
 
     try {
-      const response = await axios.get<OpenWeatherResponse>(
-        `${OPENWEATHER_BASE_URL}/weather`,
+      const response = await weatherApiClient.get<OpenWeatherResponse>(
+        "/weather",
         {
           params: {
             lat,
             lon,
-            appid: OPENWEATHER_API_KEY,
             units: "metric",
           },
-          timeout: 10000,
         }
       );
 
+
       return this.transformWeatherData({data:response.data});
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 400) {
-          throw new WeatherServiceError("Invalid coordinates", 400);
-        }
-        if (error.response?.status === 401) {
-          throw new WeatherServiceError("Invalid API key", 401);
-        }
-      }
-      throw new WeatherServiceError("Failed to fetch weather data");
+    } catch (error: any) {
+      throw this.handleApiError(error);
     }
   },
 
-  transformWeatherData({city, data}: {city?: string, data: OpenWeatherResponse}): WeatherData {
-    if(data.list && data.list.length > 0 && city) {
+  handleApiError(error: any): WeatherServiceError {
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+
+      switch (status) {
+        case 401:
+          return new WeatherServiceError("Invalid API key", 401, false);
+        case 404:
+          return new WeatherServiceError("Location not found", 404, false);
+        case 429:
+          return new WeatherServiceError("Rate limit exceeded", 429, true);
+        default:
+          return new WeatherServiceError(
+            data?.message || "Weather service error",
+            status,
+            status >= 500
+          );
+      }
+    }
+
+    // Network errors
+    if (error.code === "ECONNABORTED") {
+      return new WeatherServiceError("Request timeout", 408, true);
+    }
+
+    return new WeatherServiceError("Failed to fetch weather data", 500, true);
+  },
+
+  transformWeatherData({
+    city,
+    data,
+  }: {
+    city?: string;
+    data: OpenWeatherResponse;
+  }): WeatherData {
+    if (data.list && data.list.length > 0 && city) {
       data = data.list.find((item) => item.name === city);
     }
     return {
@@ -126,3 +140,4 @@ export const weatherService = {
     };
   },
 };
+

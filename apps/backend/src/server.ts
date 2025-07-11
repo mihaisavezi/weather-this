@@ -154,6 +154,7 @@ app.listen(PORT, () => {
   console.log(`Weather API server running on http://localhost:${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log(`Cities search: http://localhost:${PORT}/api/cities`);
+  console.log(`Weather search: http://localhost:${PORT}/api/weather`);
 });
 
 // for testing
