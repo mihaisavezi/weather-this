@@ -9,6 +9,14 @@ export const weatherApiClient = axios.create({
   timeout: 10000,
 });
 
+export const geocodingApiClient = axios.create({
+  baseURL: "http://api.openweathermap.org/geo/1.0",
+  timeout: 5000,
+  headers: {
+    "User-Agent": "Weather-App/1.0",
+  },
+});
+
 
 // Apply retry middleware to both clients
 const retryInterceptor = createRetryInterceptor({
@@ -27,6 +35,7 @@ const retryInterceptor = createRetryInterceptor({
 });
 
 retryInterceptor(weatherApiClient);
+retryInterceptor(geocodingApiClient);
 
 // Add request interceptor to include API key
 const addApiKey = (config: any) => {
@@ -38,3 +47,4 @@ const addApiKey = (config: any) => {
 };
 
 weatherApiClient.interceptors.request.use(addApiKey);
+geocodingApiClient.interceptors.request.use(addApiKey);

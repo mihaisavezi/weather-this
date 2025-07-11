@@ -5,7 +5,7 @@
     "scripts": {
         "dev": "tsx src/server.ts",
         "build:deps": "cd ../../packages/shared && pnpm run build",
-        "build": "pnpm run build:deps && tsc --noCheck",
+        "build": "pnpm run build:deps && esbuild src/server.ts --bundle --platform=node --outfile=dist/server.js --format=esm --external:express --external:cors --external:dotenv --external:axios --external:zod --external:@weather-app/shared",
         "start": "node dist/server.js",
         "test": "vitest",
         "test:run": "vitest run"
@@ -15,6 +15,7 @@
         "axios": "^1.10.0",
         "cors": "^2.8.5",
         "dotenv": "^17.2.0",
+        "esbuild": "^0.25.6",
         "express": "^4.18.0",
         "nodemon": "^3.1.10",
         "zod": "^4.0.5"

@@ -1,4 +1,4 @@
-import { weatherApiClient } from "../../utils/httpClient";
+import { geocodingApiClient, weatherApiClient } from "../../utils/httpClient";
 import type { CityOption } from "@weather-app/shared";
 
 interface OpenWeatherGeoResponse {
@@ -39,7 +39,7 @@ export const citiesService = {
     }
 
     try {
-      const response = await weatherApiClient.get<OpenWeatherGeoResponse[]>(
+      const response = await geocodingApiClient.get<OpenWeatherGeoResponse[]>(
         "/direct",
         {
           params: {
