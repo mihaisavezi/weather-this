@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express from "express";
+import express, {type Express} from "express";
 import cors from "cors";
 import type {
   WeatherResponse,
@@ -24,7 +24,7 @@ import {
   citiesSearchSchema,
 } from "./features/cities/citiesSchemas";
 
-const app = express();
+const app: Express = express();
 const PORT = process.env.PORT || 3001;
 
 // CORS configuration for production
