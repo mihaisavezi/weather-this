@@ -33,7 +33,7 @@ export class WeatherServiceError extends Error {
 }
 
 export const weatherService = {
-  async getWeatherByCity(city: string, lat: number, lon: number): Promise<WeatherData> {
+  async getWeatherByCity(city: string, lat?: number, lon?: number): Promise<WeatherData> {
     console.log("🚀 ~ getWeatherByCity ~ city:", city)
     if (!OPENWEATHER_API_KEY) {
       throw new WeatherServiceError("OpenWeather API key not configured");
