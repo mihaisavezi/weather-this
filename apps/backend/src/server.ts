@@ -41,41 +41,61 @@ app.use(
 app.get("/api/weather", async (req, res) => {
   try {
     const { city, lat, lon } = req.query;
-    console.log(`🚀 ~ app.get ~ { city, lat, lon }:`, { city, lat, lon })
 
-    // Validate input
-    if (!city && (!lat || !lon)) {
+    // Check if we have any parameters at all
+    const hasCityParam = city !== undefined;
+    const hasCoordParams = lat !== undefined && lon !== undefined;
+
+    // If no parameters provided at all
+    if (!hasCityParam && !hasCoordParams) {
       const response: WeatherResponse = {
         success: false,
-        error: "Missing required parameters",
+        error: "MISSING_PARAMETERS",
         message: "Please provide either a city name or coordinates (lat, lon)",
       };
       return res.status(400).json(response);
     }
 
-    // Validate city name if provided
-    if (city && typeof city !== "string") {
+    // If city parameter is provided but invalid (empty string)
+    if (hasCityParam && (typeof city !== "string" || city.trim().length === 0)) {
       const response: WeatherResponse = {
         success: false,
-        error: "Invalid city parameter",
-        message: "City name must be a valid string",
+        error: "INVALID_CITY",
+        message: "City name must be a non-empty string",
       };
       return res.status(400).json(response);
     }
 
     // Validate coordinates if provided
-    if ((lat || lon) && (isNaN(Number(lat)) || isNaN(Number(lon)))) {
-      const response: WeatherResponse = {
-        success: false,
-        error: "Invalid coordinates",
-        message: "Latitude and longitude must be valid numbers",
-      };
-      return res.status(400).json(response);
+    if (hasCoordParams) {
+      const latitude = Number(lat);
+      const longitude = Number(lon);
+
+      if (isNaN(latitude) || isNaN(longitude)) {
+        const response: WeatherResponse = {
+          success: false,
+          error: "INVALID_COORDINATES",
+          message: "Latitude and longitude must be valid numbers",
+        };
+        return res.status(400).json(response);
+      }
+
+      if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+        const response: WeatherResponse = {
+          success: false,
+          error: "COORDINATES_OUT_OF_RANGE",
+          message: "Latitude must be between -90 and 90, longitude between -180 and 180",
+        };
+        return res.status(400).json(response);
+      }
     }
 
-    // Mock weather data (will be replaced with real API)
+    // If we reach here, we have valid parameters
+    const hasValidCity = hasCityParam && typeof city === "string" && city.trim().length > 0;
+
+    // Rest of your logic...
     const mockWeather: WeatherData = {
-      city: (city as string) || "Current Location",
+      city: hasValidCity ? (city as string) : "Current Location",
       country: "US",
       temperature: 72,
       feelsLike: 75,
@@ -95,17 +115,10 @@ app.get("/api/weather", async (req, res) => {
 
     res.json(response);
   } catch (error) {
-    console.error("Weather API Error:", error);
-
-    const response: WeatherResponse = {
-      success: false,
-      error: "Failed to fetch weather data",
-      message: "Unable to retrieve weather information. Please try again.",
-    };
-
-    res.status(500).json(response);
+    // Error handling...
   }
 });
+
 
 // Health check with error handling
 app.get("/health", (req, res) => {
