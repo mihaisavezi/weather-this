@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useCities } from "../hooks/useCities";
 import type { CityOption } from "@weather-app/shared";
+import { useDebounce } from "../hooks/useDebounce";
 
 interface CitySearchProps {
   onCitySelect: (city: CityOption) => void;
@@ -17,11 +18,14 @@ export const CitySearch: React.FC<CitySearchProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
+  // Debounce the query with a 300ms delay
+  const debouncedQuery = useDebounce(query, 300);
+
   const {
     data: citiesResponse,
     isLoading,
     error,
-  } = useCities(query, query.length >= 2);
+  } = useCities(debouncedQuery, debouncedQuery.length >= 2);
   const cities = citiesResponse?.data || [];
 
   // Handle keyboard navigation
@@ -52,7 +56,7 @@ export const CitySearch: React.FC<CitySearchProps> = ({
   };
 
   const handleCitySelect = (city: CityOption) => {
-    console.log("🚀 ~ handleCitySelect ~ city:", city)
+    console.log("🚀 ~ handleCitySelect ~ city:", city);
     setQuery(city.display);
     setIsOpen(false);
     setSelectedIndex(-1);

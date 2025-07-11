@@ -48,12 +48,13 @@ export const weatherService = {
             lat,
             lon,
             appid: OPENWEATHER_API_KEY,
+            units: "metric"
           },
           timeout: 10000, // 10 second timeout
         }
       );
 
-      return this.transformWeatherData(city, response.data);
+      return this.transformWeatherData({city, data: response.data});
     } catch (error) {
         console.log("🚀 ~ getWeatherByCity ~ error:", error)
       if (axios.isAxiosError(error)) {
@@ -93,7 +94,7 @@ export const weatherService = {
         }
       );
 
-      return this.transformWeatherData(response.data);
+      return this.transformWeatherData({data:response.data});
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 400) {
@@ -107,8 +108,8 @@ export const weatherService = {
     }
   },
 
-  transformWeatherData(city: string, data: OpenWeatherResponse): WeatherData {
-    if(data.list && data.list.length > 0) {
+  transformWeatherData({city, data}: {city?: string, data: OpenWeatherResponse}): WeatherData {
+    if(data.list && data.list.length > 0 && city) {
       data = data.list.find((item) => item.name === city);
     }
     return {

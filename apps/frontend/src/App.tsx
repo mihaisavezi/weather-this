@@ -1,12 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { weatherApi } from "./services/api";
 import { formatTemperature } from "@weather-app/shared";
 import { CitySearch } from "./components/CitySearch";
+import { LocationButton } from "./components/LocationButton";
 import type { CityOption } from "@weather-app/shared";
 
+interface LocationState {
+  type: "city" | "coords" | null;
+  city?: CityOption;
+  coords?: { lat: number; lon: number };
+}
+
 function App() {
-  const [selectedCity, setSelectedCity] = useState<CityOption | null>(null);
+  const [location, setLocation] = useState<LocationState>({ type: null });
+  const [autoLocationAttempted, setAutoLocationAttempted] = useState(false);
 
   const {
     data: weatherResponse,
@@ -16,18 +24,86 @@ function App() {
   } = useQuery({
     queryKey: [
       "weather",
-      selectedCity?.name,
-      selectedCity?.lat,
-      selectedCity?.lon,
+      location.type,
+      location.city?.name,
+      location.coords?.lat,
+      location.coords?.lon,
     ],
+    queryFn: () => {
+      if (location.type === "city" && location.city) {
+        return weatherApi.getWeather(
+          location.city.name,
+          location.city.lat,
+          location.city.lon
+        );
+      } else if (location.type === "coords" && location.coords) {
+        return weatherApi.getWeather(
+          undefined,
+          location.coords.lat,
+          location.coords.lon
+        );
+      }
+      throw new Error("No location selected");
+    },
+    enabled: location.type !== null,
     staleTime: 10 * 60 * 1000,
-    queryFn: () => weatherApi.getWeather(selectedCity?.name, selectedCity!.lat, selectedCity!.lon),
-    enabled: !!selectedCity,
   });
-    console.log("🚀 ~ App ~ error:", error)
 
-  const handleCitySelect = (city: CityOption) => {
-    setSelectedCity(city);
+  // Auto-detect location on app load
+  useEffect(() => {
+    if (!autoLocationAttempted && "geolocation" in navigator) {
+      setAutoLocationAttempted(true);
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            type: "coords",
+            coords: {
+              lat: position.coords.latitude,
+              lon: position.coords.longitude,
+            },
+          });
+        },
+        (error) => {
+          console.log("Auto-geolocation failed:", error.message);
+          // Silently fail - user can manually trigger location or search for city
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 5000,
+          maximumAge: 300000,
+        }
+      );
+    }
+  }, [autoLocationAttempted]);
+
+  const handleCitySelect = useCallback((city: CityOption) => {
+    setLocation({
+      type: "city",
+      city,
+    });
+  }, []);
+
+  // Fix: Wrap callback with useCallback
+  const handleLocationDetected = useCallback(
+    (coords: { lat: number; lon: number }) => {
+      setLocation({
+        type: "coords",
+        coords,
+      });
+    },
+    []
+  );
+
+  const getCurrentLocationDisplay = () => {
+    if (location.type === "city" && location.city) {
+      return location.city.display;
+    } else if (location.type === "coords") {
+      return `Current Location (${location.coords?.lat.toFixed(
+        4
+      )}, ${location.coords?.lon.toFixed(4)})`;
+    }
+    return null;
   };
 
   return (
@@ -45,16 +121,43 @@ function App() {
         🌤️ Weather App
       </h1>
 
-      {/* City Search */}
+      {/* Location Selection */}
       <div style={{ marginBottom: "30px" }}>
-        <CitySearch
-          onCitySelect={handleCitySelect}
-          placeholder="Search for a city (e.g., London, New York, Tokyo)..."
+        {/* City Search */}
+        <div style={{ marginBottom: "20px" }}>
+          <CitySearch
+            onCitySelect={handleCitySelect}
+            placeholder="Search for a city (e.g., London, New York, Tokyo)..."
+          />
+        </div>
+
+        {/* Divider */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            margin: "20px 0",
+            color: "#6c757d",
+          }}
+        >
+          <div
+            style={{ flex: 1, height: "1px", backgroundColor: "#dee2e6" }}
+          ></div>
+          <span style={{ padding: "0 16px", fontSize: "14px" }}>OR</span>
+          <div
+            style={{ flex: 1, height: "1px", backgroundColor: "#dee2e6" }}
+          ></div>
+        </div>
+
+        {/* Location Button */}
+        <LocationButton
+          onLocationDetected={handleLocationDetected}
+          disabled={isLoading}
         />
       </div>
 
-      {/* Current Selection */}
-      {selectedCity && (
+      {/* Current Selection Display */}
+      {getCurrentLocationDisplay() && (
         <div
           style={{
             backgroundColor: "#e8f4fd",
@@ -64,7 +167,7 @@ function App() {
             border: "1px solid #bee5eb",
           }}
         >
-          <strong>Selected:</strong> {selectedCity.display}
+          <strong>📍 Current Location:</strong> {getCurrentLocationDisplay()}
         </div>
       )}
 
@@ -116,6 +219,27 @@ function App() {
           >
             Try Again
           </button>
+        </div>
+      )}
+
+      {/* No Location Selected */}
+      {!location.type && !isLoading && (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "40px",
+            backgroundColor: "#f8f9fa",
+            borderRadius: "12px",
+            border: "2px dashed #dee2e6",
+          }}
+        >
+          <h3 style={{ color: "#6c757d", marginBottom: "16px" }}>
+            🌍 Get Weather Information
+          </h3>
+          <p style={{ color: "#6c757d", margin: "0" }}>
+            Search for a city above or use your current location to see weather
+            data
+          </p>
         </div>
       )}
 
