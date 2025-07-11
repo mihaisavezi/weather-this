@@ -1,4 +1,4 @@
-import type { WeatherResponse } from "@weather-app/shared";
+import type { WeatherResponse, CitiesResponse } from "@weather-app/shared";
 
 const API_BASE_URL = "http://localhost:3001";
 
@@ -29,6 +29,28 @@ export const weatherApi = {
     if (!response.ok) {
       throw new WeatherApiError(
         data.message || "Failed to fetch weather data",
+        data.error || "UNKNOWN_ERROR",
+        response.status
+      );
+    }
+
+    return data;
+  },
+
+  async searchCities(
+    query: string,
+    limit: number = 5
+  ): Promise<CitiesResponse> {
+    const url = `${API_BASE_URL}/api/cities?query=${encodeURIComponent(
+      query
+    )}&limit=${limit}`;
+
+    const response = await fetch(url);
+    const data: CitiesResponse = await response.json();
+
+    if (!response.ok) {
+      throw new WeatherApiError(
+        data.message || "Failed to search cities",
         data.error || "UNKNOWN_ERROR",
         response.status
       );
