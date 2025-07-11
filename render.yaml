@@ -3,7 +3,7 @@ services:
   - type: web
     name: weather-app-backend
     runtime: node
-    region: oregon
+    region: frankfurt
     plan: starter
     buildCommand: |
       cd apps/backend &&
@@ -31,7 +31,6 @@ services:
   - type: web
     name: weather-app-frontend
     runtime: static
-    region: oregon
     plan: starter
     buildCommand: |
       npm install -g pnpm &&
