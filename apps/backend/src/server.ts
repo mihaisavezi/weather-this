@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import type {
@@ -6,16 +6,23 @@ import type {
   WeatherData,
   CitiesResponse,
 } from "@weather-app/shared";
-import { weatherService, WeatherServiceError } from "./features/weather/weatherService";
-import { citiesService, CitiesServiceError } from "./features/cities/citiesService";
+import {
+  weatherService,
+  WeatherServiceError,
+} from "./features/weather/weatherService";
+import {
+  citiesService,
+  CitiesServiceError,
+} from "./features/cities/citiesService";
 import { validateQuery, ValidatedRequest } from "./middleware/validation";
 import {
   weatherRequestSchema,
   type WeatherRequest,
 } from "./features/weather/weatherSchemas";
-import { CitiesSearchRequest, citiesSearchSchema } from "./features/cities/citiesSchemas";
-
-dotenv.config();
+import {
+  CitiesSearchRequest,
+  citiesSearchSchema,
+} from "./features/cities/citiesSchemas";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -150,4 +157,4 @@ app.listen(PORT, () => {
 });
 
 // for testing
-export { app }
+export { app };
