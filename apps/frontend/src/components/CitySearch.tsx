@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useCities } from "../hooks/useCities";
-import type { CityOption } from "@weather-app/shared";
 import { useDebounce } from "../hooks/useDebounce";
+import type { CityOption } from "@weather-app/shared";
 
 interface CitySearchProps {
   onCitySelect: (city: CityOption) => void;
@@ -18,7 +18,6 @@ export const CitySearch: React.FC<CitySearchProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Debounce the query with a 300ms delay
   const debouncedQuery = useDebounce(query, 300);
 
   const {
@@ -26,9 +25,9 @@ export const CitySearch: React.FC<CitySearchProps> = ({
     isLoading,
     error,
   } = useCities(debouncedQuery, debouncedQuery.length >= 2);
+
   const cities = citiesResponse?.data || [];
 
-  // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen || cities.length === 0) return;
 
@@ -56,7 +55,6 @@ export const CitySearch: React.FC<CitySearchProps> = ({
   };
 
   const handleCitySelect = (city: CityOption) => {
-    console.log("🚀 ~ handleCitySelect ~ city:", city);
     setQuery(city.display);
     setIsOpen(false);
     setSelectedIndex(-1);
@@ -77,11 +75,9 @@ export const CitySearch: React.FC<CitySearchProps> = ({
   };
 
   const handleInputBlur = () => {
-    // Delay closing to allow clicks on dropdown items
     setTimeout(() => setIsOpen(false), 150);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -98,10 +94,13 @@ export const CitySearch: React.FC<CitySearchProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const isTyping = query !== debouncedQuery && query.length >= 2;
+
   return (
-    <div style={{ position: "relative", width: "100%" }}>
+    <div className="relative w-full">
       {/* Search Input */}
-      <div style={{ position: "relative" }}>
+      <div className="relative">
+
         <input
           ref={inputRef}
           type="text"
@@ -111,41 +110,14 @@ export const CitySearch: React.FC<CitySearchProps> = ({
           onBlur={handleInputBlur}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          style={{
-            width: "100%",
-            padding: "12px 16px",
-            border: "2px solid #ddd",
-            borderRadius: "8px",
-            fontSize: "16px",
-            outline: "none",
-            transition: "border-color 0.2s",
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = "#3498db";
-            handleInputFocus();
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = "#ddd";
-            handleInputBlur();
-          }}
+          className="search-input pl-10 pr-12"
         />
 
         {/* Loading indicator */}
-        {isLoading && (
-          <div
-            style={{
-              position: "absolute",
-              right: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: "20px",
-              height: "20px",
-              border: "2px solid #f3f3f3",
-              borderTop: "2px solid #3498db",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-            }}
-          />
+        {(isLoading || isTyping) && (
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-weather-primary"></div>
+          </div>
         )}
       </div>
 
@@ -153,86 +125,49 @@ export const CitySearch: React.FC<CitySearchProps> = ({
       {isOpen && query.length >= 2 && (
         <div
           ref={listRef}
-          style={{
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            right: 0,
-            backgroundColor: "white",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            zIndex: 1000,
-            maxHeight: "300px",
-            overflowY: "auto",
-            marginTop: "4px",
-          }}
+          className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto"
         >
           {error ? (
-            <div
-              style={{
-                padding: "12px 16px",
-                color: "#e74c3c",
-                textAlign: "center",
-              }}
-            >
-              Error searching cities. Please try again.
+            <div className="px-4 py-3 text-center text-red-600">
+              <p className="text-sm">
+                Error searching cities. Please try again.
+              </p>
             </div>
-          ) : isLoading ? (
-            <div
-              style={{
-                padding: "12px 16px",
-                color: "#7f8c8d",
-                textAlign: "center",
-              }}
-            >
-              Searching...
+          ) : isLoading || isTyping ? (
+            <div className="px-4 py-3 text-center text-gray-500">
+              <p className="text-sm">Searching...</p>
             </div>
           ) : cities.length > 0 ? (
             cities.map((city, index) => (
-              <div
+              <button
                 key={`${city.name}-${city.country}-${city.lat}-${city.lon}`}
                 onClick={() => handleCitySelect(city)}
-                style={{
-                  padding: "12px 16px",
-                  cursor: "pointer",
-                  borderBottom:
-                    index < cities.length - 1 ? "1px solid #f0f0f0" : "none",
-                  backgroundColor:
-                    selectedIndex === index ? "#f8f9fa" : "white",
-                  transition: "background-color 0.2s",
-                }}
+                className={`w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors ${
+                  selectedIndex === index ? "bg-blue-50 border-blue-200" : ""
+                }`}
                 onMouseEnter={() => setSelectedIndex(index)}
               >
-                <div style={{ fontWeight: "500", color: "#2c3e50" }}>
-                  {city.name}
+                <div className="flex items-center">
+                  <div className="w-4 h-4 text-gray-400 mr-3 flex-shrink-0">
+                    📍
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">{city.name}</div>
+                    <div className="text-sm text-gray-500">
+                      {city.state ? `${city.state}, ` : ""}
+                      {city.country}
+                    </div>
+                  </div>
                 </div>
-                <div style={{ fontSize: "14px", color: "#7f8c8d" }}>
-                  {city.state ? `${city.state}, ` : ""}
-                  {city.country}
-                </div>
-              </div>
+              </button>
             ))
           ) : (
-            <div
-              style={{
-                padding: "12px 16px",
-                color: "#7f8c8d",
-                textAlign: "center",
-              }}
-            >
-              No cities found for "{query}"
+            <div className="px-4 py-3 text-center text-gray-500">
+              <p className="text-sm">No cities found for "{debouncedQuery}"</p>
             </div>
           )}
         </div>
       )}
-
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 };

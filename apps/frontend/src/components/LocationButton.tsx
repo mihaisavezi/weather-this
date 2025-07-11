@@ -13,7 +13,7 @@ export const LocationButton: React.FC<LocationButtonProps> = ({
   const { coords, loading, error, supported, getCurrentLocation, clearError } =
     useGeolocation();
 
-    React.useEffect(() => {
+  React.useEffect(() => {
     if (coords) {
       onLocationDetected(coords);
     }
@@ -26,93 +26,56 @@ export const LocationButton: React.FC<LocationButtonProps> = ({
 
   if (!supported) {
     return (
-      <div
-        style={{
-          padding: "12px",
-          backgroundColor: "#fff3cd",
-          border: "1px solid #ffeaa7",
-          borderRadius: "8px",
-          color: "#856404",
-          fontSize: "14px",
-        }}
-      >
-        📍 Geolocation is not supported by your browser
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <div className="h-5 w-5 text-yellow-600">📍</div>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm text-yellow-800">
+              Geolocation is not supported by your browser
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       <button
         onClick={handleClick}
         disabled={disabled || loading}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          padding: "12px 16px",
-          backgroundColor: loading ? "#6c757d" : "#28a745",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          fontSize: "16px",
-          cursor: disabled || loading ? "not-allowed" : "pointer",
-          transition: "background-color 0.2s",
-          width: "100%",
-          justifyContent: "center",
-        }}
-        onMouseEnter={(e) => {
-          if (!disabled && !loading) {
-            e.currentTarget.style.backgroundColor = "#218838";
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!disabled && !loading) {
-            e.currentTarget.style.backgroundColor = "#28a745";
-          }
-        }}
+        className="btn-secondary w-full flex items-center justify-center space-x-2"
       >
         {loading ? (
           <>
-            <div
-              style={{
-                width: "16px",
-                height: "16px",
-                border: "2px solid #ffffff",
-                borderTop: "2px solid transparent",
-                borderRadius: "50%",
-                animation: "spin 1s linear infinite",
-              }}
-            />
-            Detecting location...
+            <div className="w-5 h-5 animate-spin border-2 border-white border-t-transparent rounded-full"></div>
+            <span>Detecting location...</span>
           </>
         ) : (
-          <>📍 Use Current Location</>
+          <>
+            <div className="w-5 h-5">📍</div>
+            <span>Use Current Location</span>
+          </>
         )}
       </button>
 
       {error && (
-        <div
-          style={{
-            marginTop: "12px",
-            padding: "12px",
-            backgroundColor: "#f8d7da",
-            border: "1px solid #f5c6cb",
-            borderRadius: "8px",
-            color: "#721c24",
-            fontSize: "14px",
-          }}
-        >
-          <strong>Location Error:</strong> {error}
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+            </div>
+            <div className="ml-3">
+              <h4 className="text-sm font-medium text-red-800">
+                Location Error
+              </h4>
+              <p className="text-sm text-red-700 mt-1">{error}</p>
+            </div>
+          </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 };

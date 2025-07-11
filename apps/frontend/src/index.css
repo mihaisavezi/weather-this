@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/* Custom CSS variables for your weather app theme */
+@theme {
+  --color-weather-primary: #3498db;
+  --color-weather-secondary: #2c3e50;
+  --color-weather-success: #4caf50;
+  --color-weather-warning: #ff9800;
+  --color-weather-error: #f44336;
+  --color-weather-background: #f8f9fa;
+  
+  /* Custom spacing */
+  --spacing-weather-card: 2rem;
+  --spacing-weather-gap: 1.5rem;
+  
+  /* Custom border radius */
+  --radius-weather-card: 1rem;
+  --radius-weather-button: 0.5rem;
+  
+  /* Custom shadows */
+  --shadow-weather-card: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+}
+
+
+
+/* Component classes using CSS variables */
+.weather-card {
+  @apply bg-gradient-to-br from-weather-primary via-blue-500 to-blue-600;
+  @apply rounded-[--radius-weather-card] p-[--spacing-weather-card];
+  @apply text-white shadow-[--shadow-weather-card] max-w-md mx-auto p-6;
+  @apply transform  duration-300 hover:scale-105;
+}
+
+.weather-stat {
+  @apply backdrop-blur-sm rounded-lg p-4;
+  @apply hover:bg-white/20;
+}
+
+.search-input {
+  @apply w-full px-4 py-3 border-2 border-gray-300;
+  @apply rounded-[--radius-weather-button] focus:ring-2 focus:ring-weather-primary;
+  @apply focus:border-transparent outline-none  duration-200;
+  @apply text-gray-700 placeholder-gray-400;
+}
+
+.btn-primary {
+  @apply bg-weather-primary hover:bg-blue-600 text-white font-medium;
+  @apply px-6 py-3 rounded-[--radius-weather-button]  duration-200;
+  @apply focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply bg-green-500 hover:bg-green-600 text-white font-medium;
+  @apply px-6 py-3 rounded-[--radius-weather-button]  duration-200;
+  @apply focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
