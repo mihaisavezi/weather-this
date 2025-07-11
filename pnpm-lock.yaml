@@ -81,6 +81,9 @@ importers:
       '@weather-app/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      dotenv:
+        specifier: ^17.2.0
+        version: 17.2.0
       react:
         specifier: ^18.2.0
         version: 18.3.1

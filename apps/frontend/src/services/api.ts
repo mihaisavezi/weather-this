@@ -1,6 +1,6 @@
 import type { WeatherResponse, CitiesResponse } from "@weather-app/shared";
 
-const API_BASE_URL = "http://localhost:3001";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 export class WeatherApiError extends Error {
   constructor(message: string, public code: string, public status: number) {

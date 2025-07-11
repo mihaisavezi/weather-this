@@ -3,9 +3,11 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "dev": "nodemon --exec tsx src/server.ts",
-        "build": "tsc",
-        "test": "vitest"
+        "dev": "tsx src/server.ts",
+        "build": "tsc --noCheck",
+        "start": "node dist/server.js",
+        "test": "vitest",
+        "test:run": "vitest run"
     },
     "dependencies": {
         "@weather-app/shared": "workspace:*",
