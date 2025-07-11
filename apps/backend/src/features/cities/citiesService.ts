@@ -1,8 +1,5 @@
-import axios from "axios";
+import { weatherApiClient } from "../../utils/httpClient";
 import type { CityOption } from "@weather-app/shared";
-
-const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
-const GEOCODING_BASE_URL = "http://api.openweathermap.org/geo/1.0";
 
 interface OpenWeatherGeoResponse {
   name: string;
@@ -10,11 +7,14 @@ interface OpenWeatherGeoResponse {
   state?: string;
   lat: number;
   lon: number;
-  local_names?: Record<string, string>;
 }
 
 export class CitiesServiceError extends Error {
-  constructor(message: string, public statusCode?: number) {
+  constructor(
+    message: string,
+    public statusCode?: number,
+    public retryable: boolean = false
+  ) {
     super(message);
     this.name = "CitiesServiceError";
   }
@@ -22,49 +22,65 @@ export class CitiesServiceError extends Error {
 
 export const citiesService = {
   async searchCities(query: string, limit: number = 5): Promise<CityOption[]> {
-    if (!OPENWEATHER_API_KEY) {
-      throw new CitiesServiceError("OpenWeather API key not configured");
+    if (!process.env.OPENWEATHER_API_KEY) {
+      throw new CitiesServiceError(
+        "OpenWeather API key not configured",
+        500,
+        false
+      );
     }
 
     if (!query || query.trim().length < 2) {
       throw new CitiesServiceError(
         "Query must be at least 2 characters long",
-        400
+        400,
+        false
       );
     }
 
     try {
-      const response = await axios.get<OpenWeatherGeoResponse[]>(
-        `${GEOCODING_BASE_URL}/direct`,
+      const response = await weatherApiClient.get<OpenWeatherGeoResponse[]>(
+        "/direct",
         {
           params: {
             q: query.trim(),
-            limit: Math.min(limit, 5), // OpenWeather max is 5
-            appid: OPENWEATHER_API_KEY,
+            limit: Math.min(limit, 5),
           },
-          timeout: 5000, // 5 second timeout
         }
       );
 
       return response.data.map(this.transformCityData);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          throw new CitiesServiceError("Invalid API key", 401);
-        }
-        if (error.code === "ECONNABORTED") {
-          throw new CitiesServiceError(
-            "Request timeout - cities service unavailable",
-            408
-          );
-        }
-      }
-      throw new CitiesServiceError("Failed to fetch city suggestions");
+    } catch (error: any) {
+      throw this.handleApiError(error);
     }
   },
 
+  handleApiError(error: any): CitiesServiceError {
+    if (error.response) {
+      const status = error.response.status;
+
+      switch (status) {
+        case 401:
+          return new CitiesServiceError("Invalid API key", 401, false);
+        case 429:
+          return new CitiesServiceError("Rate limit exceeded", 429, true);
+        default:
+          return new CitiesServiceError(
+            "Cities service error",
+            status,
+            status >= 500
+          );
+      }
+    }
+
+    if (error.code === "ECONNABORTED") {
+      return new CitiesServiceError("Request timeout", 408, true);
+    }
+
+    return new CitiesServiceError("Failed to search cities", 500, true);
+  },
+
   transformCityData(data: OpenWeatherGeoResponse): CityOption {
-    // Create a formatted display name
     let display = data.name;
     if (data.state) {
       display += `, ${data.state}`;
