@@ -21,7 +21,7 @@ pnpm install
 
 ```bash
 # Create backend environment file
-cp apps/backend/.env.example apps/backend/.env
+touch apps/backend/.env
 ```
 
 Add your API key to `apps/backend/.env`:
@@ -65,3 +65,15 @@ pnpm run dev
 
 - **API Key Required**: The app won't work without a valid OpenWeatherMap API key
 - **CORS Configured**: Production apps are configured to work together across domain defined by FRONTEND_URL env variable
+
+
+```javascript
+// apps/backend/.env.example
+OPENWEATHER_API_KEY=YOUR_API_KEY
+OPENWEATHER_BASE_URL=https://api.openweathermap.org/data/2.5
+PORT=3001
+FRONTEND_URL=http://localhost:5173
+
+// apps/frontend/.env.example
+VITE_API_URL=http://localhost:3001
+```
