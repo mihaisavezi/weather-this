@@ -1,0 +1,15 @@
+{
+    "name": "@weather-app/shared",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "test": "echo 'Shared package working!'"
+    },
+    "devDependencies": {
+        "typescript": "^5.0.0"
+    }
+}
