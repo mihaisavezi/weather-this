@@ -12,6 +12,12 @@ export default defineConfig(({ mode }) => {
       testTimeout: 10000,
       // Make environment variables available to tests
       env: env,
+      include: [
+        "src/**/*.unit.test.ts", // Include unit tests
+        "src/**/*.integration.test.ts", // Include integration tests
+        "src/**/*.test.ts", // Include regular tests
+        "src/**/*.spec.ts", // Include spec files
+      ],
     },
     // Ensure dotenv is processed
     define: {

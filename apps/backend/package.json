@@ -8,6 +8,8 @@
         "build": "pnpm run build:deps && esbuild src/server.ts --bundle --platform=node --outfile=dist/server.js --format=esm --external:express --external:cors --external:dotenv --external:axios --external:zod --external:@weather-app/shared",
         "start": "node dist/server.js",
         "test": "vitest",
+        "test:unit": "vitest unit.",
+        "test:integration": "vitest integration.",
         "test:run": "vitest run"
     },
     "dependencies": {

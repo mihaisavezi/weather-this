@@ -61,6 +61,21 @@ pnpm run dev
 - **City Search**: `GET /api/cities?query={searchTerm}`
 - **Health Check**: `GET /health`
 
+
+### Features
+
+- Autocomplete Search: Implement an autocomplete text input field that allows users
+to type and search for cities. Fetch city suggestions based on the input and display
+the weather for the selected city.
+- Weather Display: Show current weather data, such as temperature, weather
+condition (e.g., sunny, rainy), humidity, and wind speed.
+- Error Handling: Handle cases where the browser blocks location access or if the
+user inputs an invalid city name.
+- UI Design: Create a simple, responsive UI to display weather data in an organized
+way.
+- Location Detection: Use the browser's Geolocation API to
+automatically detect the user's location and fetch the weather for that location.
+
 ## ⚠️ Important Notes
 
 - **API Key Required**: The app won't work without a valid OpenWeatherMap API key
@@ -77,3 +92,13 @@ FRONTEND_URL=http://localhost:5173
 // apps/frontend/.env.example
 VITE_API_URL=http://localhost:3001
 ```
+
+## Improvements
+
+* make it run cross-platform
+* Frtonend Unit Testing: Add unit tests for critical components, especially around fetching
+weather data and city search.
+* Historical Data: Allow users to view weather data from the past few days.
+* UI Enhancements: Add visual improvements such as icons for weather conditions
+(e.g., sun, cloud, rain) or animations.
+* Favorites: Allow users to save and view weather for their favorite cities.
