@@ -95,7 +95,7 @@ VITE_API_URL=http://localhost:3001
 
 ## Improvements
 
-* make it run cross-platform
+* make dev scripts run cross platform, right now tested only on Mac
 * Frtonend Unit Testing: Add unit tests for critical components, especially around fetching
 weather data and city search.
 * Historical Data: Allow users to view weather data from the past few days.
