@@ -2,11 +2,10 @@
 
 ## Stack
 
-- `pnpm`
+- `pnpm` with `turbo` for an easy to use, scalable, monorepo setup
 - `react`
-- `typescript`
+- `typescript` - shared types between backend and frontend entities
 - `tanstackQuery`
-- `turbopack`
 - `express`
 - `openWeatherMap API`
 
