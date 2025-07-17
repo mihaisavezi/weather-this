@@ -1,5 +1,15 @@
 # Weather App - Development \& Production Guide
 
+## Stack
+
+- `pnpm`
+- `react`
+- `typescript`
+- `tanstackQuery`
+- `turbopack`
+- `express`
+- `openWeatherMap API`
+
 ## 🚀 Running the App in Development Mode
 
 ### Prerequisites
